@@ -1,28 +1,27 @@
 // controllers/enrollmentController.js
 const Enrollment = require("../models/Enrollment");
 const User = require("../models/User");
-const fs = require("fs");
-const path = require("path");
 
 /**
- * Student submits enrollment (multipart/form-data files handled by multer)
- * Expects files in req.files: reportCard, goodMoral, birthCertificate, others[]
+ * User submits enrollment (multipart/form-data with files)
  */
 exports.submitEnrollment = async (req, res) => {
   try {
     const { level, strand, schoolYear, yearLevel } = req.body;
-    const studentId = req.session.user?.id;
+    const userId = req.session.user?.id;
 
-    if (!studentId) return res.status(401).json({ message: "Unauthorized" });
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const user = await User.findById(studentId);
+    const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Prevent duplicate application for same school year
-    const existing = await Enrollment.findOne({ lrn: user.lrn, schoolYear });
-    if (existing) return res.status(400).json({ message: "You already applied for this school year" });
+    // Prevent duplicate for same SY
+    const existing = await Enrollment.findOne({ studentId: user._id, schoolYear });
+    if (existing) {
+      return res.status(400).json({ message: "You already applied for this school year" });
+    }
 
-    // Collect file names (multer stored files)
+    // Collect documents
     const files = req.files || {};
     const docs = {
       reportCard: files.reportCard?.[0]?.filename || null,
@@ -33,20 +32,15 @@ exports.submitEnrollment = async (req, res) => {
 
     const enrollment = new Enrollment({
       studentId: user._id,
-      name: user.fullName,
-      lrn: user.lrn,
+      name: user.fullName || user.email, // fallback if no fullName
+      lrn: user.lrn || null,             // some users may not have LRN yet
       level,
       strand,
       section: null,
       schoolYear,
       yearLevel: yearLevel || null,
       status: "pending",
-      documents: {
-        reportCard: docs.reportCard,
-        goodMoral: docs.goodMoral,
-        birthCertificate: docs.birthCertificate,
-        others: docs.others,
-      },
+      documents: docs,
     });
 
     await enrollment.save();
@@ -58,18 +52,56 @@ exports.submitEnrollment = async (req, res) => {
 };
 
 /**
- * Student can view their own enrollment (latest for current school year)
+ * User checks their enrollment (latest)
  */
 exports.getMyEnrollment = async (req, res) => {
   try {
-    const studentId = req.session.user?.id;
-    if (!studentId) return res.status(401).json({ message: "Unauthorized" });
+    const userId = req.session.user?.id;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const rec = await Enrollment.findOne({ studentId }).sort({ createdAt: -1 });
+    const rec = await Enrollment.findOne({ studentId: userId }).sort({ createdAt: -1 });
     if (!rec) return res.status(404).json({ message: "No enrollment found" });
 
     res.json(rec);
   } catch (err) {
     res.status(500).json({ message: "Error fetching enrollment", error: err.message });
+  }
+};
+
+/**
+ * Registrar/Admin approves enrollment → promote User role to Student
+ */
+exports.approveEnrollment = async (req, res) => {
+  try {
+    const enrollment = await Enrollment.findById(req.params.id);
+    if (!enrollment) return res.status(404).json({ message: "Enrollment not found" });
+
+    enrollment.status = "approved";
+    await enrollment.save();
+
+    await User.findByIdAndUpdate(enrollment.studentId, { role: "Student" });
+
+    res.json({ message: "Enrollment approved, user promoted to Student" });
+  } catch (err) {
+    console.error("approveEnrollment error:", err);
+    res.status(500).json({ message: "Error approving enrollment", error: err.message });
+  }
+};
+
+/**
+ * Registrar/Admin rejects enrollment
+ */
+exports.rejectEnrollment = async (req, res) => {
+  try {
+    const enrollment = await Enrollment.findById(req.params.id);
+    if (!enrollment) return res.status(404).json({ message: "Enrollment not found" });
+
+    enrollment.status = "rejected";
+    await enrollment.save();
+
+    res.json({ message: "Enrollment rejected" });
+  } catch (err) {
+    console.error("rejectEnrollment error:", err);
+    res.status(500).json({ message: "Error rejecting enrollment", error: err.message });
   }
 };
