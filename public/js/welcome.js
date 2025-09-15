@@ -164,8 +164,8 @@
       qs('#openRecordBook').addEventListener('click', ()=>{ location.href = '/html/recordbook.html'; });
       qs('#openRegistrar').addEventListener('click', ()=>{ location.href = '/html/registrar.html'; });
 
-      // Add impersonation control if SuperAdmin
-      if((user.role && user.role==='SuperAdmin') || (user.isSuperAdmin) ){
+      // SuperAdmin impersonation controls
+      if ((user.role && user.role === 'SuperAdmin') || user.isSuperAdmin) {
         const area = qs('#impersonationArea');
         const btn = document.createElement('button');
         btn.className = 'btn ghost';
@@ -174,6 +174,16 @@
         btn.addEventListener('click', ()=> openImpersonationModal(user));
         area.appendChild(btn);
       }
+
+      // Show "Back to SuperAdmin" if session is impersonated
+      if (user.originalSuperAdmin) {
+        qs('#backToSuperBtn').style.display = 'inline-block';
+        qs('#backToSuperBtn').addEventListener('click', async ()=>{
+          try {
+            await fetch(api.impersonate + '/stop', { method:'POST', credentials:'include' });
+          } catch(e) {}
+          location.reload();
+        });
 
       // Load announcements and clock
       loadAnnouncements();
