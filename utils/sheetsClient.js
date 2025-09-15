@@ -1,29 +1,24 @@
 // utils/sheetsClient.js
 const { google } = require("googleapis");
-const dotenv = require("dotenv");
-dotenv.config();
+const fs = require("fs");
+const path = require("path");
 
-// Load Google credentials from .env (stringified service account key)
-const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+const keyPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+
+if (!keyPath) {
+  throw new Error("Missing GOOGLE_APPLICATION_CREDENTIALS in .env");
+}
+
+// Read credentials file
+const credentials = JSON.parse(
+  fs.readFileSync(path.resolve(keyPath), "utf8")
+);
 
 const auth = new google.auth.GoogleAuth({
   credentials,
-  scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
 
 const sheets = google.sheets({ version: "v4", auth });
 
-/**
- * Get values from a sheet
- * @param {string} sheetId - Google Sheet ID
- * @param {string} range - Range like "Sheet1!A1:Z50"
- */
-async function getSheetValues(sheetId, range) {
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: sheetId,
-    range,
-  });
-  return res.data.values || [];
-}
-
-module.exports = { getSheetValues };
+module.exports = sheets;
