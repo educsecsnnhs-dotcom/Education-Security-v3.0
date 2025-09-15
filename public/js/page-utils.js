@@ -1,6 +1,4 @@
 // public/js/page-utils.js
-// Reusable helpers used by all page scripts.
-
 (function(window){
   async function fetchJson(url, opts = {}) {
     const cfg = Object.assign({ credentials: 'include', headers: { 'Accept': 'application/json' } }, opts);
@@ -27,10 +25,9 @@
     backdrop.addEventListener('click', (ev)=>{ if(ev.target===backdrop){ root.style.display='none'; root.innerHTML=''; }});
     root.appendChild(backdrop);
   }
-  function closeModal(){ const r = document.getElementById('modalRoot'); if(r){ r.style.display='none'; r.innerHTML=''; } }
+  function closeModal(){ const r=document.getElementById('modalRoot'); if(r){ r.style.display='none'; r.innerHTML=''; } }
 
   async function currentUser(){
-    // return user object from /api/auth/me (tolerates {user:...} or raw)
     try{
       const r = await fetchJson('/api/auth/me');
       if(!r.ok) return null;
