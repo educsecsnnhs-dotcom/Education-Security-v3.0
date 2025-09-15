@@ -1,68 +1,76 @@
 // controllers/authController.js
 const User = require("../models/User");
-const { encrypt, decrypt } = require("../utils/caesar");
+const { encryptPassword, decryptPassword } = require("../utils/caesar");
 
-/**
- * Register - default role is Student. (SuperAdmin seeds separately)
- */
+// REGISTER
 exports.register = async (req, res) => {
   try {
-    const { fullName, username, password, lrn } = req.body;
-    if (!username || !password) return res.status(400).json({ message: "username & password required" });
-    const exists = await User.findOne({ username });
-    if (exists) return res.status(400).json({ message: "Username already taken" });
+    const { email, password } = req.body;
 
-    const hashed = encrypt(password); // Caesar cipher
-    const user = new User({ fullName, username, password: hashed, lrn, role: "Student" });
-    await user.save();
-    res.status(201).json({ message: "User registered", user: { id: user._id, username: user.username, role: user.role } });
+    if (!email || !password)
+      return res.status(400).send("Email and password are required");
+
+    const existing = await User.findOne({ email });
+    if (existing) return res.status(400).send("Email already registered");
+
+    const encryptedPass = encryptPassword(password);
+
+    const newUser = new User({
+      email,
+      password: encryptedPass,
+      role: "User", // default
+      extraRoles: [],
+    });
+
+    await newUser.save();
+    res.status(201).send("✅ Registration successful");
   } catch (err) {
-    res.status(500).json({ message: "Registration error", error: err.message });
+    console.error("Register error:", err);
+    res.status(500).send("Server error");
   }
 };
 
-/**
- * Login - store minimal user info in session (no password)
- */
+// LOGIN
 exports.login = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    const { email, password } = req.body;
 
-    if (decrypt(user.password) !== password) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    if (!email || !password)
+      return res.status(400).send("Email and password are required");
 
-    // Minimal session payload (don't store password)
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).send("Invalid credentials");
+
+    const decrypted = decryptPassword(user.password);
+    if (decrypted !== password)
+      return res.status(400).send("Invalid credentials");
+
+    // ✅ Session
     req.session.user = {
-      id: user._id.toString(),
-      username: user.username,
+      id: user._id,
+      email: user.email,
       role: user.role,
-      fullName: user.fullName,
-      lrn: user.lrn,
+      extraRoles: user.extraRoles,
     };
 
-    res.json({ message: "Login successful", user: req.session.user });
+    res.json({ message: "✅ Login successful", user: req.session.user });
   } catch (err) {
-    res.status(500).json({ message: "Login error", error: err.message });
+    console.error("Login error:", err);
+    res.status(500).send("Server error");
   }
 };
 
-/**
- * Logout
- */
+// LOGOUT
 exports.logout = (req, res) => {
   req.session.destroy(() => {
     res.clearCookie("connect.sid");
-    res.json({ message: "Logged out" });
+    res.send("✅ Logged out");
   });
 };
 
-/**
- * Get current session user
- */
+// SESSION CHECK
 exports.me = (req, res) => {
-  if (!req.session || !req.session.user) return res.status(401).json({ message: "Unauthorized" });
+  if (!req.session.user) return res.status(401).send("Not logged in");
   res.json(req.session.user);
 };
+
