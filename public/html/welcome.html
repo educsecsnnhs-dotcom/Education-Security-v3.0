@@ -1,1 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Welcome - EDU-SEC</title>
 
+  <!-- External welcome CSS -->
+  <link rel="stylesheet" href="css/welcome.css">
+
+  <!-- Shared scripts -->
+  <script src="js/auth.js" defer></script>
+  <script src="js/menu.js" defer></script>
+  <script src="js/welcome.js" defer></script>
+</head>
+<body>
+  <div class="app-wrap">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <h3>EDU-SEC</h3>
+      <ul id="menuList" class="menu-list"></ul>
+    </nav>
+
+    <div style="min-height:100vh;display:flex;flex-direction:column">
+      <!-- Header -->
+      <header>
+        <div style="display:flex;gap:14px;align-items:center">
+          <h1 class="title">SNNHS SCHOOL PORTAL</h1>
+          <div id="clock">--:--:--</div>
+        </div>
+        <div class="header-actions">
+          <div id="impersonationArea"></div>
+          <button id="logoutBtn" class="btn logout">Logout</button>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main>
+        <div class="grid">
+          <div>
+            <!-- User Info -->
+            <section class="user-info card">
+              <h2>👋 Welcome, <span id="userName">User</span></h2>
+              <p class="small muted">Role: <strong id="userRole">Role</strong></p>
+              <p id="todayDate" class="small muted"></p>
+            </section>
+
+            <!-- Announcements -->
+            <section class="card" style="margin-top:16px">
+              <h2>📌 School-wide Announcements</h2>
+              <div id="schoolAnnouncements" class="announcement-list">
+                <div class="muted small">Loading announcements…</div>
+              </div>
+            </section>
+
+            <!-- Spacer -->
+            <div style="height:22px"></div>
+
+            <!-- Quick links / admin test area -->
+            <section class="card">
+              <h2>🔧 Quick Actions</h2>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <a class="btn ghost" id="openAnnouncements">Open Announcements</a>
+                <a class="btn ghost" id="openRecordBook">Record Book</a>
+                <a class="btn ghost" id="openRegistrar">Registrar</a>
+              </div>
+            </section>
+          </div>
+
+          <!-- Right column: school info -->
+          <aside>
+            <section class="card">
+              <h2>🏫 School Info</h2>
+              <div class="pdf-viewer">
+                <embed src="/school-info.pdf" type="application/pdf" />
+              </div>
+            </section>
+
+            <section class="card" style="margin-top:14px">
+              <h2>🧭 Tips</h2>
+              <p class="small muted">Use the sidebar to navigate. If you're a SuperAdmin you can impersonate other users (button in header).</p>
+            </section>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal placeholder -->
+  <div id="modalRoot" style="display:none"></div>
+</body>
+</html>
