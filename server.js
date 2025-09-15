@@ -75,17 +75,17 @@ if (!fs.existsSync("uploads/announcements")) {
 }
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ✅ Serve frontend files from /views
-app.use(express.static(path.join(__dirname, "views")));
+// ✅ Serve frontend files from /public
+app.use(express.static(path.join(__dirname, "public")));
 
 // ✅ Root route → splash screen
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "index.html"));
+  res.sendFile(path.join(__dirname, "public", "html", "index.html"));
 });
 
 // ✅ Fallback → login page
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "html", "login.html"));
+  res.sendFile(path.join(__dirname, "public", "html", "login.html"));
 });
 
 /* ---------------------- 🚀 Start Server ---------------------- */
@@ -94,3 +94,4 @@ app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   await seedAdmin(); // ensure SuperAdmin exists
 });
+
