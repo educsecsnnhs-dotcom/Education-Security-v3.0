@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       alert("✅ Registration successful! Please log in.");
-      window.location.href = "login.html";
+      window.location.href = "html/login.html";
     } catch (err) {
       console.error("Registration error:", err);
       alert("❌ " + err.message);
