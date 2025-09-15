@@ -1,4 +1,3 @@
-// public/js/register.js
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("registerForm");
   if (!form) return;
@@ -14,15 +13,12 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // ✅ Encrypt password with Caesar cipher (same shift as backend)
-    const encryptedPassword = caesarEncrypt(password, 7);
-
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // ensures session cookie is set
-        body: JSON.stringify({ email, password: encryptedPassword }),
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
       });
 
       if (!res.ok) {
@@ -36,5 +32,14 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Registration error:", err);
       alert("❌ " + err.message);
     }
+  });
+
+  // Password toggle
+  const toggle = document.getElementById("togglePassword");
+  const passwordInput = document.getElementById("password");
+  toggle.addEventListener("click", () => {
+    const type = passwordInput.type === "password" ? "text" : "password";
+    passwordInput.type = type;
+    toggle.textContent = type === "password" ? "👁️" : "🙈";
   });
 });
