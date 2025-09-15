@@ -69,6 +69,7 @@ input[type="password"] {
   cursor: pointer;
   color: #64748b;
   padding: 0;
+  line-height: 1;
 }
 
 /* Submit button */
