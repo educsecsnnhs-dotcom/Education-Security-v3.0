@@ -14,15 +14,12 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // ✅ Encrypt password with Caesar cipher before sending
-    const encryptedPassword = caesarEncrypt(password, 7);
-
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include", // ensures session cookie
-        body: JSON.stringify({ email, password: encryptedPassword }),
+        body: JSON.stringify({ email, password }), // 🔑 send raw password (backend hashes it)
       });
 
       if (!res.ok) {
@@ -31,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // ✅ Session stored, redirect
-      window.location.href = "js/welcome.html";
+      window.location.href = "welcome.html";
     } catch (err) {
       console.error("Login error:", err);
       alert("❌ " + err.message);
