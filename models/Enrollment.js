@@ -5,7 +5,16 @@ const enrollmentSchema = new mongoose.Schema(
   {
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     name: { type: String, required: true },
-    lrn: { type: String, required: true, minlength: 12, maxlength: 12 },
+    lrn: { 
+      type: String, 
+      required: true,
+      validate: {
+        validator: function(v) {
+          return /^\d{12}$/.test(v); // ✅ must be exactly 12 digits
+        },
+        message: "LRN must be a 12-digit number",
+      },
+    },
     level: { type: String, enum: ["junior", "senior"], required: true },
     strand: { type: String },
     section: { type: String, default: null },
