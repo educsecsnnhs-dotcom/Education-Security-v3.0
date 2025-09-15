@@ -75,12 +75,17 @@ if (!fs.existsSync("uploads/announcements")) {
 }
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ✅ Serve frontend
-app.use(express.static(path.join(__dirname, "public")));
+// ✅ Serve frontend files from /views
+app.use(express.static(path.join(__dirname, "views")));
 
-// ✅ SPA fallback
+// ✅ Root route → splash screen
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "index.html"));
+});
+
+// ✅ Fallback → login page
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(path.join(__dirname, "views", "html", "login.html"));
 });
 
 /* ---------------------- 🚀 Start Server ---------------------- */
